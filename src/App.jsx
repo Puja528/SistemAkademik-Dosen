@@ -16,12 +16,13 @@ const Login = lazy(() => import("./pages/auth/Login"));
 const DashboardUtama = lazy(() => import("./pages/mahasiswa/DashboardUtama"));
 const KHS = lazy(() => import("./pages/mahasiswa/KHS"));
 const Absensi = lazy(() => import("./pages/mahasiswa/Absensi"));
+const MahasiswaLayout = lazy(() => import("./layouts/mahasiswa/MahasiswaLayout"));
+
 const DosenDashboard = lazy(() => import("./pages/Dosen/Dashboard"));
 const DosenNilai = lazy(() => import("./pages/Dosen/Nilai"));
 const DosenJadwal = lazy(() => import("./pages/Dosen/Jadwal"));
 const DosenAbsensi = lazy(() => import("./pages/Dosen/Absensi"));
 const DosenLayout = lazy(() => import("./layouts/Dosen/DosenLayout"));
-const MahasiswaLayout = lazy(() => import("./layouts/mahasiswa/MahasiswaLayout"));
 
 // Komponen Page Loader Efek Memuat Halaman
 const PageLoader = () => (
@@ -58,7 +59,6 @@ function App() {
     <Router>
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          {/* Jalur Utama Otomatis langsung mengarah ke Login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
 
           {/* LOGIKA GERBANG LOGIN DINAMIS */}
@@ -96,7 +96,6 @@ function App() {
           <Route
             element={sesiUser?.role === "mahasiswa" ? <MahasiswaLayout onLogout={tanganiLogout} /> : <Navigate to="/login" replace />}
           >
-            {/* Halaman anak tidak perlu dititipkan onLogout lagi karena sudah dihandle oleh Layout di atas */}
             <Route path="/mahasiswa" element={<DashboardUtama />} />
             <Route path="/mahasiswa/khs" element={<KHS />} />
             <Route path="/mahasiswa/presensi" element={<Absensi />} />

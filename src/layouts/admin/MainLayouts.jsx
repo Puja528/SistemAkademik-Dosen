@@ -1,8 +1,8 @@
 import React, { lazy, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
-import Sidebar from '../../components/Sidebar';
-import Navbar from '../../components/Navbar';
-import Loading from '../../components/Loading';
+import Sidebar from '../../components/admin/Sidebar';
+import Navbar from '../../components/admin/Navbar';
+import Loading from '../../components/admin/Loading';
 
 // PERBAIKAN: Tangkap props onLogout di sini
 const MainLayouts = ({ onLogout }) => {

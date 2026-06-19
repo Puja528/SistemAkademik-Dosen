@@ -17,7 +17,7 @@ const Sidebar = ({ onLogout }) => {
     { path: '/admin/dashboard', name: 'Dashboard', icon: <AiOutlineDashboard /> },
     { path: '/admin/mahasiswa', name: 'Data Mahasiswa', icon: <AiOutlineUser /> },
     { path: '/admin/dosen', name: 'Data Dosen', icon: <AiOutlineTeam /> },
-    { path: '/admin/jadwal', name: 'Operasi Academic', icon: <AiOutlineRead /> },
+    { path: '/admin/jadwal', name: 'Kelola Jadwal', icon: <AiOutlineRead /> },
     { path: '/admin/nilai', name: 'Publikasi Nilai', icon: <AiOutlineFileText /> },
   ];
 

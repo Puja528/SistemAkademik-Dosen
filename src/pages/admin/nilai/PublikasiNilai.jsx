@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { AiOutlineSearch, AiOutlineEye, AiOutlineCheckCircle, AiOutlineClockCircle } from "react-icons/ai";
-import { nilaiAPI } from "../../../services/nilaiAPI"; 
-import LihatNilai from "./LihatNilai"; // Menghubungkan ke file kosongmu
+import { nilaiAPI } from "../../../services/nilaiAPI";
+import LihatNilai from "./LihatNilai"; 
+import Loading from "../../../components/admin/Loading";
 
 const PublikasiNilai = () => {
   const [dataPublikasi, setDataPublikasi] = useState([]);
@@ -9,8 +10,7 @@ const PublikasiNilai = () => {
   const [filterKelas, setFilterKelas] = useState("Semua Kelas");
   const [filterStatus, setFilterStatus] = useState("Semua Status");
   const [isLoading, setIsLoading] = useState(true);
-  
-  // State untuk kontrol Modal Detail Lihat Nilai
+
   const [modalLihatDetail, setModalLihatDetail] = useState({ terbuka: false, idJadwal: null, namaMK: "" });
 
   const muatDataNilai = async () => {
@@ -29,13 +29,20 @@ const PublikasiNilai = () => {
     muatDataNilai();
   }, []);
 
-  // Fungsi saat tombol "Terbitkan Nilai" diklik Admin
+  // Ubah bagian ini di PublikasiNilai.jsx
   const tanganiPublikasi = async (idJadwal) => {
     if (window.confirm("Apakah kamu yakin ingin mempublikasikan nilai ini ke mahasiswa?")) {
       try {
-        await nilaiAPI.publikasikanNilai(idJadwal);
-        alert("Nilai berhasil dipublikasikan! Mahasiswa sekarang dapat melihat KHS mereka.");
-        muatDataNilai(); // Refresh data otomatis
+        // Pastikan kita kirim sebagai integer
+        await nilaiAPI.publikasikanNilai(parseInt(idJadwal));
+        await dashboardAPI.logAktivitas(
+            "Publikasi Nilai", 
+            `Nilai untuk jadwal ${idJadwal} telah diterbitkan`, 
+            "Grade", 
+            "Admin Sistem"
+        );
+        alert("Nilai berhasil dipublikasikan!");
+        muatDataNilai();
       } catch (error) {
         alert("Gagal mempublikasikan nilai: " + error.message);
       }
@@ -45,20 +52,20 @@ const PublikasiNilai = () => {
   const nilaiTerfilter = dataPublikasi.filter((pub) => {
     const namaMK = pub?.mata_kuliah ? pub.mata_kuliah.toLowerCase() : "";
     const nidnDosen = pub?.nidn_dosen ? pub.nidn_dosen.toLowerCase() : "";
-   
+
     const cocokCari = namaMK.includes(cari.toLowerCase()) || nidnDosen.includes(cari.toLowerCase());
     const cocokKelas = filterKelas === "Semua Kelas" || pub.kelas === filterKelas;
-    
+
     // Sinkronisasi status_nilai dari database (jika null anggap Draft)
     const statusDb = pub.status_nilai || "Draft";
     const cocokStatus = filterStatus === "Semua Status" || statusDb === filterStatus;
-   
+
     return cocokCari && cocokKelas && cocokStatus;
   });
 
   return (
     <div className="max-w-[1600px] mx-auto space-y-6 animate-fadeIn">
-      
+
       {/* AREA FILTER UTAMA */}
       <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
         <div className="relative w-full md:w-96">
@@ -111,7 +118,7 @@ const PublikasiNilai = () => {
               {isLoading ? (
                 <tr>
                   <td colSpan="6" className="px-6 py-10 text-center text-slate-400 font-bold animate-pulse">
-                    Menghubungkan ke server tabel nilai Supabase...
+                    <Loading/>
                   </td>
                 </tr>
               ) : nilaiTerfilter.length > 0 ? (
@@ -137,26 +144,25 @@ const PublikasiNilai = () => {
                           ) : (
                             <AiOutlineClockCircle className="text-amber-500 text-base" />
                           )}
-                          <span className={`px-2.5 py-1 text-[10px] font-extrabold rounded-md inline-block leading-none ${
-                            statusAsli === "Terbit"
+                          <span className={`px-2.5 py-1 text-[10px] font-extrabold rounded-md inline-block leading-none ${statusAsli === "Terbit"
                               ? "bg-black text-white"
                               : "bg-amber-50 text-amber-700 border border-amber-100"
-                          }`}>
+                            }`}>
                             {statusAsli === "Terbit" ? "Terbit (Akses Mhs Open)" : "Draft (Mhs Hidden)"}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4.5 text-center flex items-center justify-center gap-2">
-                        <button 
+                        <button
                           onClick={() => setModalLihatDetail({ terbuka: true, idJadwal: pub.id_jadwal, namaMK: pub.mata_kuliah })}
                           className="bg-slate-50 text-slate-500 border border-slate-200 hover:bg-slate-100 px-3 py-1.5 rounded-xl font-bold text-[11px] inline-flex items-center gap-1.5 transition duration-150"
                         >
                           <AiOutlineEye className="text-sm" />
                           <span>Lihat Nilai</span>
                         </button>
-                        
+
                         {statusAsli === "Draft" && (
-                          <button 
+                          <button
                             onClick={() => tanganiPublikasi(pub.id_jadwal)}
                             className="bg-blue-600 text-white hover:bg-blue-700 px-3 py-1.5 rounded-xl font-bold text-[11px] inline-flex items-center gap-1.5 transition duration-150 shadow-sm shadow-blue-100"
                           >
@@ -181,7 +187,7 @@ const PublikasiNilai = () => {
 
       {/* RENDER MODAL DETAIL LIHAT NILAI */}
       {modalLihatDetail.terbuka && (
-        <LihatNilai 
+        <LihatNilai
           idJadwal={modalLihatDetail.idJadwal}
           namaMK={modalLihatDetail.namaMK}
           onTutup={() => setModalLihatDetail({ terbuka: false, idJadwal: null, namaMK: "" })}

@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { AiOutlineClose, AiOutlineUser, AiOutlineMail, AiOutlineIdcard } from "react-icons/ai";
-import { dosenAPI } from "../../../services/dosenAPI"; 
-// ── MODIFIKASI: Import supabase client untuk mendaftarkan akun auth ──
-import { supabase } from "../../../supabaseClient"; 
+import { dosenAPI } from "../../../services/dosenAPI";
+import { supabase } from "../../../supabaseClient";
 
 const TambahDosen = ({ isTambahTerbuka, setIsTambahTerbuka, onSuksesSimpan }) => {
   const [inputBaru, setInputBaru] = useState({
@@ -19,13 +18,12 @@ const TambahDosen = ({ isTambahTerbuka, setIsTambahTerbuka, onSuksesSimpan }) =>
 
   const tanganiSimpanDosen = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true); 
-    
+    setIsSubmitting(true);
+
     try {
-      // 1. Daftarkan akun auth ke Supabase Auth Server
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: inputBaru.email.trim(),
-        password: "DosenPoltek2026!", // Password untuk login Supabase Auth
+        password: "DosenPoltek2026!",
       });
 
       if (authError) throw authError;
@@ -35,16 +33,15 @@ const TambahDosen = ({ isTambahTerbuka, setIsTambahTerbuka, onSuksesSimpan }) =>
         throw new Error("Gagal membuat ID otentikasi user baru.");
       }
 
-      // ── SINKRONISASI KE TABEL public.users ──
       const { error: userTableError } = await supabase
         .from("users")
         .insert([
           {
             id: uuidDosenBaru,
             email: inputBaru.email.trim(),
-            nama: inputBaru.nama.trim(), // Mengisi nama sesuai input form
-            role: "dosen",               // Set role sebagai dosen
-            password: "DosenPoltek2026!" // Menyimpan teks password biasa di tabel users
+            nama: inputBaru.nama.trim(),
+            role: "dosen",
+            password: "DosenPoltek2026!"
           }
         ]);
 
@@ -52,16 +49,14 @@ const TambahDosen = ({ isTambahTerbuka, setIsTambahTerbuka, onSuksesSimpan }) =>
         throw new Error("Gagal menyinkronkan data ke tabel users: " + userTableError.message);
       }
 
-      // 2. Gabungkan data inputan form admin dengan UUID auth untuk tabel dosen
       const dataSiapKirim = {
         ...inputBaru,
         user_id: uuidDosenBaru
       };
 
-      // Kirim payload lengkap via Axios ke tabel dosen
       await dosenAPI.createDosen(dataSiapKirim);
       
-      onSuksesSimpan(dataSiapKirim); 
+      onSuksesSimpan(dataSiapKirim);
       setIsTambahTerbuka(false);
       
       setInputBaru({
@@ -77,7 +72,7 @@ const TambahDosen = ({ isTambahTerbuka, setIsTambahTerbuka, onSuksesSimpan }) =>
       console.error(error);
       alert(error.message || "Gagal memproses pendaftaran dosen.");
     } finally {
-      setIsSubmitting(false); 
+      setIsSubmitting(false);
     }
   };
 
@@ -85,7 +80,6 @@ const TambahDosen = ({ isTambahTerbuka, setIsTambahTerbuka, onSuksesSimpan }) =>
     <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 overflow-hidden animate-fadeIn">
       <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-100 flex flex-col max-h-[90vh] overflow-hidden">
         
-        {/* HEADER MODAL */}
         <div className="flex justify-between items-center border-b border-slate-100 p-6 shrink-0">
           <div>
             <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Formulir Tambah Dosen</h3>
@@ -101,11 +95,9 @@ const TambahDosen = ({ isTambahTerbuka, setIsTambahTerbuka, onSuksesSimpan }) =>
           </button>
         </div>
 
-        {/* INPUT CONTENT AREA */}
         <form onSubmit={tanganiSimpanDosen} className="p-6 space-y-4 overflow-y-auto flex-1 text-slate-700">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             
-            {/* NIDN */}
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                 <AiOutlineIdcard className="text-sm" /> NIDN / NUP
@@ -122,7 +114,6 @@ const TambahDosen = ({ isTambahTerbuka, setIsTambahTerbuka, onSuksesSimpan }) =>
               />
             </div>
 
-            {/* Nama */}
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                 <AiOutlineUser className="text-sm" /> Nama Lengkap & Gelar
@@ -138,7 +129,6 @@ const TambahDosen = ({ isTambahTerbuka, setIsTambahTerbuka, onSuksesSimpan }) =>
               />
             </div>
 
-            {/* Email */}
             <div className="space-y-1.5 md:col-span-2">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                 <AiOutlineMail className="text-sm" /> Email Resmi Akademik
@@ -154,7 +144,6 @@ const TambahDosen = ({ isTambahTerbuka, setIsTambahTerbuka, onSuksesSimpan }) =>
               />
             </div>
 
-            {/* Prodi */}
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Homebase Program Studi</label>
               <select
@@ -169,7 +158,6 @@ const TambahDosen = ({ isTambahTerbuka, setIsTambahTerbuka, onSuksesSimpan }) =>
               </select>
             </div>
 
-            {/* Status */}
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status Kepegawaian</label>
               <select
@@ -185,7 +173,6 @@ const TambahDosen = ({ isTambahTerbuka, setIsTambahTerbuka, onSuksesSimpan }) =>
 
           </div>
 
-          {/* ACTION BUTTONS */}
           <div className="flex gap-3 pt-5 border-t border-slate-100 bg-white sticky bottom-0 z-10">
             <button
               type="button"

@@ -1,5 +1,4 @@
 import axios from 'axios';
-
 const PROJECT_ID = "mwkewvjpgcvlwgycdpvo";
 const API_KEY = "sb_publishable_-mjKGRjVH18ef1G8ZCjTHg_dcP5lVxK";
 const BASE_URL = `https://${PROJECT_ID}.supabase.co/rest/v1/absensi`;
@@ -12,26 +11,21 @@ const headers = {
 };
 
 export const absensiAPI = {
-    // Ambil rekap absensi yang sudah ter-input di database berdasarkan id_jadwal dan pertemuan
     async fetchAbsensiKelas(idJadwal, pertemuan) {
-        try {
-            const url = `${BASE_URL}?id_jadwal=eq.${idJadwal}&pertemuan=eq.${pertemuan}`;
-            const response = await axios.get(url, { headers });
-            return response.data;
-        } catch (error) {
-            console.error("Eror fetch absensi:", error.message);
-            return [];
-        }
+        const url = `${BASE_URL}?id_jadwal=eq.${idJadwal}&pertemuan=eq.${pertemuan}`;
+        const res = await axios.get(url, { headers });
+        return res.data;
     },
-
-    // Kirim massal data absensi mahasiswa ke database Supabase
+    // Fungsi untuk mahasiswa mengambil riwayat absensinya sendiri
+    async fetchAbsensiMahasiswa(idMahasiswa) {
+        const url = `${BASE_URL}?id_mahasiswa=eq.${idMahasiswa}&select=*,jadwal(mata_kuliah,sks)`;
+        const res = await axios.get(url, { headers });
+        return res.data;
+    },
     async simpanAbsensiKelas(payloadArray) {
-        try {
-            const response = await axios.post(BASE_URL, payloadArray, { headers });
-            return response.data;
-        } catch (error) {
-            console.error("Eror simpan absensi:", error.response?.data || error.message);
-            throw new Error("Gagal menyimpan rekam absensi ke server cloud.");
-        }
+        // Menggunakan upsert untuk menghindari duplikasi jika tanggal/pertemuan sama
+        const url = `${BASE_URL}?on_conflict=id_absen`;
+        const res = await axios.post(BASE_URL, payloadArray, { headers });
+        return res.data;
     }
 };

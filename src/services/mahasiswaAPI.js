@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-// Menggunakan data asli proyek Supabase kamu sesuai konfigurasi tim
-const BASE_URL = "https://mwkewvjpgcvlwgycdpvo.supabase.co/rest/v1/mahasiswa"; 
+const BASE_URL = "https://mwkewvjpgcvlwgycdpvo.supabase.co/rest/v1/mahasiswa";
 const API_KEY = "sb_publishable_-mjKGRjVH18ef1G8ZCjTHg_dcP5lVxK";
 
 const headers = {
@@ -11,21 +10,17 @@ const headers = {
 };
 
 export const mahasiswaAPI = {
-    // 1. Ambil Semua Data
     async fetchMahasiswa() {
-        const response = await axios.get(BASE_URL, { headers });
+        const url = `${BASE_URL}?select=*,kelas(nama_kelas)`;
+        const response = await axios.get(url, { headers });
         return response.data;
+
     },
 
-    // ── FUNGSI BARU: AMBIL 1 DATA MAHASISWA BERDASARKAN USER_ID (UUID) ──
     async fetchMahasiswaByUserId(userId) {
         try {
-            // Menggunakan filter REST API Supabase: url?user_id=eq.UUID
             const urlFilter = `${BASE_URL}?user_id=eq.${userId}`;
             const response = await axios.get(urlFilter, { headers });
-            
-            // PostgREST Supabase selalu mengembalikan Array. 
-            // Kita ambil indeks ke-0 karena datanya pasti tunggal/satu.
             return response.data[0] || null;
         } catch (error) {
             console.error("Error fetch mahasiswa by user_id:", error.response?.data || error.message);
@@ -33,21 +28,36 @@ export const mahasiswaAPI = {
         }
     },
 
-    // 2. Tambah Data Baru
     async createMahasiswa(data) {
-        const response = await axios.post(BASE_URL, data, { headers });
+        const payload = {
+            id_mahasiswa: data.id_mahasiswa,
+            nama: data.nama,
+            program_studi: data.program_studi,
+            email: data.email,
+            id_kelas: data.id_kelas,
+            angkatan: Number(data.angkatan),
+            status: data.status,
+            user_id: data.user_id
+        };
+        const response = await axios.post(BASE_URL, payload, { headers });
         return response.data;
     },
 
-    // 3. Update Data (Berdasarkan id_mahasiswa / NIM)
     async updateMahasiswa(id, data) {
-        // Format query param di Supabase untuk filter: ?id_mahasiswa=eq.NIM
         const urlUpdate = `${BASE_URL}?id_mahasiswa=eq.${id}`;
-        const response = await axios.patch(urlUpdate, data, { headers });
+        const payload = {
+            id_mahasiswa: data.id_mahasiswa,
+            nama: data.nama,
+            program_studi: data.program_studi,
+            email: data.email,
+            id_kelas: data.id_kelas,
+            angkatan: data.angkatan,
+            status: data.status
+        };
+        const response = await axios.patch(urlUpdate, payload, { headers });
         return response.data;
     },
 
-    // 4. Hapus Data
     async deleteMahasiswa(id) {
         const urlDelete = `${BASE_URL}?id_mahasiswa=eq.${id}`;
         const response = await axios.delete(urlDelete, { headers });

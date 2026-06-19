@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-// Mengganti AiOutlineTrash -> AiOutlineDelete, dan menambahkan AiOutlineWarning
 import { AiOutlineSearch, AiOutlinePlus, AiOutlineMore, AiOutlineMail, AiOutlineEdit, AiOutlineDelete, AiOutlineWarning } from "react-icons/ai";
 import { mahasiswaAPI } from "../../../services/mahasiswaAPI.js";
 import TambahMahasiswa from "./TambahMahasiswa";
 import EditMahasiswa from "./EditMahasiswa";
+import Loading from "../../../components/admin/Loading.jsx";
 
 const MasterMahasiswa = () => {
   const [dataMhs, setDataMhs] = useState([]);
@@ -13,18 +13,15 @@ const MasterMahasiswa = () => {
   const [filterStatus, setFilterStatus] = useState("Semua Status");
   const [isTambahTerbuka, setIsTambahTerbuka] = useState(false);
 
-  const [dropdownAktif, setDropdownAktif] = useState(null); 
-  const [dataTerpilih, setDataTerpilih] = useState(null);   
+  const [dropdownAktif, setDropdownAktif] = useState(null);
+  const [dataTerpilih, setDataTerpilih] = useState(null);
   const [isEditTerbuka, setIsEditTerbuka] = useState(false);
   const [isHapusTerbuka, setIsHapusTerbuka] = useState(false);
 
-  // FUNGSI MEMBACA DATA MENGGUNAKAN AXIOS (SESUAI MODUL)
   const ambilDataMahasiswa = async () => {
     try {
       setLoading(true);
-      const data = await mahasiswaAPI.fetchMahasiswa(); // <-- Memanggil fungsi Axios
-      
-      // Mengurutkan data lokal agar data terbaru berada di atas jika diinginkan
+      const data = await mahasiswaAPI.fetchMahasiswa();
       setDataMhs(data ? [...data].reverse() : []);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -46,14 +43,12 @@ const MasterMahasiswa = () => {
     ambilDataMahasiswa();
   };
 
-  // FUNGSI HAPUS DATA MENGGUNAKAN AXIOS
   const tanganiHapusMhsDatabase = async () => {
     try {
-      await mahasiswaAPI.deleteMahasiswa(dataTerpilih.id_mahasiswa); // <-- Memanggil fungsi Axios
-      
+      await mahasiswaAPI.deleteMahasiswa(dataTerpilih.id_mahasiswa);
       setIsHapusTerbuka(false);
       setDataTerpilih(null);
-      ambilDataMahasiswa(); // Refresh tabel
+      ambilDataMahasiswa();
     } catch (error) {
       console.error("Error deleting data:", error);
       alert("Gagal menghapus data: " + (error.response?.data?.message || error.message));
@@ -76,7 +71,6 @@ const MasterMahasiswa = () => {
       
       <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
         
-        {/* Input Pencarian */}
         <div className="relative w-full md:w-96">
           <AiOutlineSearch className="absolute left-4 top-3.5 text-slate-400 text-lg" />
           <input
@@ -88,7 +82,6 @@ const MasterMahasiswa = () => {
           />
         </div>
 
-        {/* Dropdown Filter & Tombol Tambah */}
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto justify-end">
           
           <select 
@@ -120,11 +113,9 @@ const MasterMahasiswa = () => {
             <AiOutlinePlus className="text-sm" />
             <span>Tambah Mahasiswa</span>
           </button>
-
         </div>
       </div>
 
-      {/* AREA TABEL DATA */}
       <div className="bg-white border border-slate-200/60 rounded-2xl shadow-sm overflow-visible">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -132,9 +123,9 @@ const MasterMahasiswa = () => {
               <tr className="border-b border-slate-100 p-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">
                 <th className="px-6 py-4">ID Mahasiswa</th>
                 <th className="px-6 py-4">Nama</th>
-                <th className="px-6 py-4">Program Studi</th>
-                <th className="px-6 py-4">Email</th>
-                <th className="px-6 py-4">IPK</th>
+                <th className="px-6 py-4">Prodi</th>
+                <th className="px-6 py-4">Kelas</th>
+                <th className="px-6 py-4">Angkatan</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-center">Aksi</th>
               </tr>
@@ -143,7 +134,7 @@ const MasterMahasiswa = () => {
               {loading ? (
                 <tr>
                   <td colSpan="7" className="px-6 py-10 text-center text-slate-400 font-semibold bg-slate-50/20">
-                    Sedang mengambil data dari database Supabase...
+                    <Loading/>
                   </td>
                 </tr>
               ) : dataTerfilter.length > 0 ? (
@@ -152,21 +143,10 @@ const MasterMahasiswa = () => {
                     <td className="px-6 py-4.5 text-sm font-medium text-slate-900">{mhs.id_mahasiswa}</td>
                     <td className="px-6 py-4.5 text-sm font-medium text-slate-900">{mhs.nama}</td>
                     <td className="px-6 py-4.5 text-sm font-normal text-slate-500">{mhs.program_studi}</td>
-                    <td className="px-6 py-4.5 text-slate-500">
-                      <div className="text-sm font-normal text-slate-500 flex items-center gap-2">
-                        <AiOutlineMail className="text-sm font-normal text-slate-500" />
-                        <span>{mhs.email}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4.5 text-sm font-medium text-slate-900">
-                      {mhs.ipk !== undefined && mhs.ipk !== null ? Number(mhs.ipk).toFixed(2) : "0.00"}
-                    </td>
+                    <td className="px-6 py-4.5 text-sm font-normal text-slate-500">{mhs.kelas?.nama_kelas}</td>
+                    <td className="px-6 py-4.5 text-sm font-normal text-slate-500">{mhs.angkatan}</td>
                     <td className="px-6 py-4.5">
-                      <span className={`px-2.5 py-1 text-[10px] font-extrabold rounded-md inline-block leading-none ${
-                        mhs.status === "Aktif" 
-                          ? "bg-slate-900 text-white" 
-                          : "bg-slate-100 text-slate-400" 
-                      }`}>
+                      <span className={`px-2.5 py-1 text-[10px] font-extrabold rounded-md inline-block leading-none ${mhs.status === "Aktif" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-400"}`}>
                         {mhs.status}
                       </span>
                     </td>
@@ -179,7 +159,6 @@ const MasterMahasiswa = () => {
                         <AiOutlineMore className="text-lg" />
                       </button>
 
-                      {/* POPUP DROPDOWN MENU AKSI */}
                       {dropdownAktif === idx && (
                         <div className="absolute right-14 top-2 w-32 bg-white border border-slate-200/80 shadow-xl rounded-xl p-1 z-50 text-left animate-fadeIn">
                           <button
@@ -223,14 +202,12 @@ const MasterMahasiswa = () => {
         </div>
       </div>
 
-      {/* SUNTIKKAN KOMPONEN MODAL TAMBAH */}
       <TambahMahasiswa 
         isTambahTerbuka={isTambahTerbuka} 
         setIsTambahTerbuka={setIsTambahTerbuka} 
         onSuksesSimpan={tanganiTambahMhsLokal} 
       />
 
-      {/* SUNTIKKAN KOMPONEN MODAL EDIT */}
       <EditMahasiswa 
         isEditTerbuka={isEditTerbuka}
         setIsEditTerbuka={setIsEditTerbuka}
@@ -238,7 +215,6 @@ const MasterMahasiswa = () => {
         onSuksesEdit={tanganiEditMhsLokal}
       />
 
-      {/* MODAL DIALOG POPUP KONFIRMASI HAPUS DATA */}
       {isHapusTerbuka && dataTerpilih && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-[99999] animate-fadeIn">
           <div className="bg-white rounded-2xl border border-slate-100 max-w-md w-full p-6 text-center shadow-2xl">
@@ -268,7 +244,6 @@ const MasterMahasiswa = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };

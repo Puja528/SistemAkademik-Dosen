@@ -1,56 +1,87 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { FiGrid, FiCheckSquare, FiFileText, FiAward, FiChevronLeft } from 'react-icons/fi';
 
-// PERBAIKAN: Menambahkan parameter { onLogout } agar fungsi dari App.jsx bisa terbaca di sini
-export default function Sidebar({ onLogout }) {
+export default function Sidebar({ 
+  portalName = "POLTEKSIM PORTAL", 
+  role = "Mahasiswa", 
+  onLogout 
+}) {
   const location = useLocation();
+  const navigate = useNavigate();
 
-  // Struktur menu terpetakan lengkap dengan jalur (path) routingnya masing-masing
-  const menu = [
-    { name: "Dashboard Utama", path: "/mahasiswa" },
-    { name: "Kartu Hasil Studi (KHS)", path: "/mahasiswa/khs" },
-    { name: "Presensi", path: "/mahasiswa/presensi" }
+  // Semua menu digabung menjadi list biasa tanpa struktur dropdown parent/child
+  const daftarMenu = [
+    { name: "Dashboard Utama", path: "/mahasiswa", icon: <FiGrid size={17} /> },
+    { name: "Presensi", path: "/mahasiswa/presensi", icon: <FiCheckSquare size={17} /> },
+    { name: "Kartu Hasil Studi (KHS)", path: "/mahasiswa/khs", icon: <FiFileText size={17} /> },
+    { name: "Transkrip Nilai", path: "/mahasiswa/transkrip", icon: <FiAward size={17} /> }
   ];
 
   return (
-    <aside className="w-64 bg-white border-r border-garis text-teks h-screen sticky top-0 flex flex-col hidden md:flex">
-      {/* Bagian Logo Kampus */}
-      <div className="p-6 border-b border-garis flex items-center gap-3">
-        <div className="w-9 h-9 bg-soft-button rounded-lg flex items-center justify-center font-bold text-white text-sm shadow-xs">
-          P
+    <aside className="sticky top-0 w-[200px] min-w-[200px] h-screen bg-white border-r border-gray-200 flex flex-col font-sans">
+      <div>
+        {/* 1. LOGO & BRAND */}
+        <div className="h-16 px-5 border-b border-gray-200 flex items-center gap-2.5 flex-shrink-0">
+          <img
+            src="../src/assets/LogoPolteksim.png"
+            alt="Polteksim Logo"
+            className="w-9 h-9 object-contain"
+            onError={(e) => {
+              e.target.style.display = "none";
+              e.target.nextSibling.style.display = "flex";
+            }}
+          />
+          {/* Fallback SVG logo jika gambar di folder assets belum terbaca */}
+          <div className="hidden w-9 h-9 items-center justify-center">
+            <svg width="36" height="36" viewBox="0 0 40 40" fill="none">
+              <rect width="40" height="40" rx="6" fill="#1A3A6B" />
+              <polygon points="20,7 33,29 7,29" fill="none" stroke="#F0C040" strokeWidth="2.2" />
+              <circle cx="20" cy="20" r="4.5" fill="#F0C040" />
+            </svg>
+          </div>
+
+          <div className="flex flex-col leading-tight">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#1A3A6B]">
+              {portalName}
+            </span>
+            <span className="text-[11px] text-gray-400">{role}</span>
+          </div>
         </div>
-        <span className="font-bold tracking-wider text-xs text-soft-dark">POLTEKSIM</span>
+
+        {/* 2. NAVIGASI MENU (FLAT LAYOUT - TANPA DROPDOWN) */}
+        <nav className="p-2.5 flex flex-col gap-0.5">
+          {daftarMenu.map((m, i) => {
+            const isActive = location.pathname === m.path;
+            return (
+              <button
+                key={i}
+                onClick={() => navigate(m.path)}
+                className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border-none cursor-pointer text-[13px] text-left transition-all duration-150 font-sans
+                  ${isActive
+                    ? "bg-[#f0f4f8] text-[#1a3a6b] font-bold"
+                    : "bg-transparent text-gray-500 font-normal hover:bg-gray-50 hover:text-gray-800"
+                  }`}
+              >
+                <span className={isActive ? 'text-[#1a3a6b]' : 'text-gray-400'}>
+                  {m.icon}
+                </span>
+                <span className="truncate">{m.name}</span>
+              </button>
+            );
+          })}
+        </nav>
       </div>
 
-      {/* Navigasi Menu Menu Utama */}
-      <nav className="flex-1 p-4 space-y-1">
-        {menu.map((m, i) => {
-          // Memeriksa apakah URL browser saat ini cocok dengan jalur menu
-          const isActive = location.pathname === m.path;
-
-          return (
-            <Link
-              key={i}
-              to={m.path}
-              className={`w-full block px-4 py-2.5 rounded-lg text-xs font-semibold transition-all ${isActive
-                  ? 'bg-soft-light text-soft-dark'
-                  : 'text-teks-samping hover:bg-latar/50 hover:text-teks'
-                }`}
-            >
-              {m.name}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Bagian Tombol Keluar */}
-      <div className="p-4 border-t border-garis">
+      {/* 3. FOOTER LOGOUT */}
+      <div className="p-2.5 border-t border-gray-200 mt-auto">
         <button
           type="button"
-          onClick={onLogout} // <--- Berjalan lancar tanpa eror karena parameter di atas sudah aktif
-          className="w-full text-left px-4 py-2.5 text-rose-600 hover:bg-rose-50 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+          onClick={onLogout}
+          className="w-full flex items-center gap-2 px-3.5 py-2 rounded-lg border-none cursor-pointer text-[13px] text-gray-500 bg-transparent hover:bg-red-50 hover:text-red-600 transition-all duration-150 font-sans"
         >
-          🚪 Keluar Akun
+          <FiChevronLeft size={15} />
+          <span>Logout</span>
         </button>
       </div>
     </aside>

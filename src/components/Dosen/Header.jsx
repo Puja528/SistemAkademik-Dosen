@@ -5,49 +5,49 @@ export default function Header() {
   const [search, setSearch] = useState("");
 
   return (
-    <header className="sticky top-0 z-40 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 gap-4 font-sans flex-shrink-0">
+    <header className="sticky top-0 z-40 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 gap-4 font-sans flex-shrink-0 text-xs">
 
-      {/* Search */}
+      {/* Search Input Box */}
       <div className="relative flex-1 max-w-xs">
         <FiSearch
-          size={15}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+          size={14}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
         />
         <input
           type="text"
           placeholder="Cari mata kuliah, capaian..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full h-9 pl-9 pr-3.5 rounded-lg border border-gray-200 bg-gray-50 text-[13px] text-gray-700 outline-none focus:border-blue-300 transition-colors"
+          className="w-full h-9 pl-9 pr-3.5 rounded-lg border border-gray-200 bg-gray-50 text-xs text-slate-700 outline-none focus:border-slate-300 focus:bg-white transition-colors placeholder:text-slate-400"
         />
       </div>
 
-      {/* Right Side */}
+      {/* Right Side Control Panel */}
       <div className="flex items-center gap-4">
 
-        {/* Notification Bell */}
-        <button className="relative p-1 text-gray-500 rounded-md hover:bg-gray-100 transition-colors">
-          <FiBell size={19} />
-          <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
+        {/* Notification Bell Icon */}
+        <button className="relative p-1.5 text-slate-500 rounded-lg hover:bg-gray-50 text-slate-600 transition-colors cursor-pointer">
+          <FiBell size={17} />
+          <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-rose-500 rounded-full border border-white" />
         </button>
 
-        {/* Divider */}
-        <div className="w-px h-7 bg-gray-200" />
+        {/* Vertical Divider */}
+        <div className="w-px h-6 bg-gray-200" />
 
-        {/* Profile */}
-        <button className="flex items-center gap-2.5 rounded-lg px-1.5 py-1 hover:bg-gray-100 transition-colors">
-          {/* Avatar */}
-          <div className="w-9 h-9 rounded-lg bg-[#1a3a6b] flex items-center justify-center text-white text-[11px] font-bold tracking-wide flex-shrink-0">
+        {/* User Profile Dropdown Button */}
+        <button className="flex items-center gap-2.5 rounded-lg px-2 py-1 hover:bg-gray-50 transition-colors cursor-pointer border-none text-left">
+          {/* Avatar Component */}
+          <div className="w-8 h-8 rounded-lg bg-[#1a3a6b] flex items-center justify-center text-white text-[11px] font-black tracking-wider flex-shrink-0 shadow-sm">
             DJS
           </div>
 
-          {/* Name & Role */}
+          {/* User Identity Info */}
           <div className="text-left leading-tight">
-            <p className="text-[13px] font-semibold text-gray-900 m-0">Dr. John Smith</p>
-            <p className="text-[11px] text-gray-400 m-0">Senior Lecturer</p>
+            <p className="text-xs font-bold text-slate-900 m-0">Dr. John Smith</p>
+            <p className="text-[10px] font-medium text-slate-400 m-0 tracking-wide uppercase">Senior Lecturer</p>
           </div>
 
-          <FiChevronDown size={15} className="text-gray-400" />
+          <FiChevronDown size={14} className="text-slate-400" />
         </button>
       </div>
     </header>

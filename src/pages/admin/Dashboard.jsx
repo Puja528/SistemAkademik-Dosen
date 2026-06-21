@@ -6,20 +6,42 @@ import {
   AiOutlineCalendar,
   AiOutlineUserAdd,
   AiOutlinePlusCircle,
-  AiOutlineSolution,
-  AiOutlineArrowRight
+  AiOutlineSolution
 } from 'react-icons/ai';
+import { FiCalendar, FiSearch } from 'react-icons/fi';
 import { dashboardAPI } from '../../services/dashboardAdminAPI';
+
+// Helper Komponen Tabel
+const TH = ({ children, className = "" }) => (
+  <th className={`text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-3 py-2.5 border-b border-gray-100 text-left ${className}`}>{children}</th>
+);
+
+const TD = ({ children, className = "" }) => (
+  <td className={`px-3 py-3.5 text-[13px] text-gray-600 border-b border-gray-50 transition-colors ${className}`}>{children}</td>
+);
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState({ totalStudents: 0, totalLecturers: 0, totalSchedules: 0 });
   const [loading, setLoading] = useState(true);
   const [aktivitas, setAktivitas] = useState([]);
+  const [waktu, setWaktu] = useState(new Date());
+  const [searchAktivitas, setSearchAktivitas] = useState("");
+  const [profilAdmin, setProfilAdmin] = useState(null);
+
+  // Real-time Clock
+  useEffect(() => {
+    const timer = setInterval(() => setWaktu(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
-    const loadStats = async () => {
+    const loadStatsAndProfile = async () => {
       try {
+        setLoading(true);
+        const localSession = JSON.parse(localStorage.getItem("siakad_session"));
+        setProfilAdmin(localSession || { nama: "Staff Administrasi", role: "Super Admin" });
+
         const data = await dashboardAPI.fetchDashboardStats();
         setStats(data);
       } catch (err) {
@@ -28,100 +50,151 @@ const Dashboard = () => {
         setLoading(false);
       }
     };
-    loadStats();
+    loadStatsAndProfile();
   }, []);
 
   useEffect(() => {
     const loadActivities = async () => {
-      const data = await dashboardAdminAPI.fetchRecentActivities();
-      const formatted = data.map(item => ({
-        id: item.id,
-        type: item.tipe,
-        title: item.judul,
-        user: item.user_name,
-        detail: item.detail,
-        time: new Date(item.waktu).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
-      }));
-      setAktivitas(formatted);
+      try {
+        const data = await dashboardAPI.fetchRecentActivities();
+        const formatted = data.map(item => ({
+          id: item.id,
+          type: item.tipe,
+          title: item.judul,
+          user: item.user_name,
+          detail: item.detail,
+          time: new Date(item.waktu).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+        }));
+        setAktivitas(formatted);
+      } catch (err) {
+        console.error("Gagal memuat aktivitas:", err);
+      }
     };
     loadActivities();
   }, []);
 
+  const hari = waktu.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const jam = waktu.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+  const filteredAktivitas = aktivitas.filter((item) =>
+    item.title.toLowerCase().includes(searchAktivitas.toLowerCase()) || 
+    item.user.toLowerCase().includes(searchAktivitas.toLowerCase())
+  );
+
   return (
-    <div className="max-w-[1600px] mx-auto space-y-10 pb-20 animate-fadeIn">
-      {/* 1. SECTION STATISTIK */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex justify-between items-center">
-          <div className="space-y-1">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Mahasiswa</span>
-            <h3 className="text-3xl font-bold text-slate-900">{loading ? "..." : stats.totalStudents}</h3>
-          </div>
-          <div className="p-3.5 bg-blue-50 text-blue-600 rounded-xl"><AiOutlineUser className="text-2xl" /></div>
+    <div className="p-6 flex flex-col gap-5 bg-gray-50/50 min-h-screen animate-fadeIn font-sans">
+      
+      {/* 1. HEADER & PROFIL (BULATAN DAN TEKS SIAKAD TELAH DIHAPUS) */}
+      <div className="rounded-xl p-6 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm" style={{ background: "linear-gradient(135deg, #1a3a6b 0%, #244b86 60%, #2e5fa3 100%)" }}>
+        <div>
+          <h1 className="text-xl font-bold m-0 mb-1.5 tracking-tight">Selamat Datang, {profilAdmin?.nama}</h1>
+          <p className="text-[13px] opacity-80 m-0">SIAKAD Politeknik Simeulue Aceh · Hak Akses: {profilAdmin?.role || "Staff Administrasi"}</p>
         </div>
-
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex justify-between items-center">
-          <div className="space-y-1">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Dosen</span>
-            <h3 className="text-3xl font-bold text-slate-900">{loading ? "..." : stats.totalLecturers}</h3>
-          </div>
-          <div className="p-3.5 bg-emerald-50 text-emerald-600 rounded-xl"><AiOutlineBook className="text-2xl" /></div>
+        <div className="text-right flex-shrink-0 bg-white/10 backdrop-blur-sm px-4 py-2.5 rounded-lg border border-white/10 self-start sm:self-auto">
+          <div className="text-[11px] opacity-75 mb-0.5 font-medium uppercase tracking-wider">{hari}</div>
+          <div className="text-xl font-mono font-bold tracking-wider">{jam} WIB</div>
         </div>
+      </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex justify-between items-center">
-          <div className="space-y-1">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Jadwal</span>
-            <h3 className="text-3xl font-bold text-slate-900">{loading ? "..." : stats.totalSchedules}</h3>
+      {/* 2. SECTION STATISTIK */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[
+          { icon: AiOutlineUser, label: "Total Mahasiswa", value: loading ? "..." : stats.totalStudents, sub: "Data Terintegrasi" },
+          { icon: AiOutlineBook, label: "Total Dosen", value: loading ? "..." : stats.totalLecturers, sub: "Semester Berjalan" },
+          { icon: AiOutlineCalendar, label: "Total Jadwal Kuliah", value: loading ? "..." : stats.totalSchedules, sub: "Aktif Terjadwal" },
+        ].map(({ icon: Icon, label, value, sub }, i) => (
+          <div key={i} className="bg-white rounded-xl border border-gray-200/80 p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Icon size={16} className="text-[#1a3a6b]" /> 
+              <span className="text-[13px] text-gray-500 font-medium">{label}</span>
+            </div>
+            <span className="text-[32px] font-extrabold text-gray-900">{value}</span>
+            <span className="text-[11.5px] text-gray-400 block mt-0.5">{sub}</span>
           </div>
-          <div className="p-3.5 bg-purple-50 text-purple-600 rounded-xl"><AiOutlineCalendar className="text-2xl" /></div>
-        </div>
+        ))}
+      </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex justify-between items-center">
-          <div className="space-y-1">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Tahun Akademik</span>
-            <h3 className="text-3xl font-bold text-slate-900">2026/1</h3>
-            <span className="text-[11px] text-blue-600 font-semibold bg-blue-50 px-2.5 py-0.5 rounded-md inline-block mt-1">Aktif</span>
-          </div>
-          <div className="p-3.5 bg-orange-50 text-orange-600 rounded-xl"><AiOutlineSolution className="text-2xl" /></div>
+      {/* 3. SECTION QUICK ACTIONS */}
+      <div className="bg-white rounded-xl border border-gray-200/80 p-5 shadow-sm">
+        <div className="flex items-center gap-2 mb-4">
+          <FiCalendar size={16} className="text-gray-500" /> 
+          <span className="text-[14px] font-bold text-gray-800">Aksi Cepat Administrasi</span>
         </div>
-      </section>
-
-      {/* 2. SECTION QUICK ACTIONS */}
-      <section className="space-y-4">
-        <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider tracking-widest">Aksi Cepat</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button
             onClick={() => navigate('/admin/mahasiswa/')}
-            className="bg-white border border-slate-200 hover:border-blue-600 p-6 rounded-2xl flex flex-col items-center justify-center gap-3 transition shadow-sm group hover:-translate-y-1"
+            className="bg-white border border-gray-200 hover:border-[#1a3a6b] p-5 rounded-xl flex flex-col items-center justify-center gap-2 transition shadow-sm group hover:-translate-y-0.5 cursor-pointer"
           >
-            <AiOutlineUserAdd className="text-2xl text-blue-700" />
-            <span className="text-xs font-bold text-slate-700 group-hover:text-blue-800">Tambah Mahasiswa</span>
+            <AiOutlineUserAdd className="text-xl text-[#1a3a6b]" />
+            <span className="text-[12px] font-semibold text-slate-700 group-hover:text-[#1a3a6b]">Tambah Mahasiswa</span>
           </button>
+          
           <button
             onClick={() => navigate('/admin/dosen/')}
-            className="bg-white border border-slate-200 hover:border-blue-600 p-6 rounded-2xl flex flex-col items-center justify-center gap-3 transition shadow-sm group hover:-translate-y-1"
+            className="bg-white border border-gray-200 hover:border-[#1a3a6b] p-5 rounded-xl flex flex-col items-center justify-center gap-2 transition shadow-sm group hover:-translate-y-0.5 cursor-pointer"
           >
-            <AiOutlinePlusCircle className="text-2xl text-blue-700" />
-            <span className="text-xs font-bold text-slate-700 group-hover:text-blue-800">Tambah Dosen</span>
+            <AiOutlinePlusCircle className="text-xl text-[#1a3a6b]" />
+            <span className="text-[12px] font-semibold text-slate-700 group-hover:text-[#1a3a6b]">Tambah Dosen</span>
           </button>
+
           <button
             onClick={() => navigate('/admin/jadwal')}
-            className="bg-white border border-slate-200 hover:border-blue-600 p-6 rounded-2xl flex flex-col items-center justify-center gap-3 transition shadow-sm group hover:-translate-y-1"
+            className="bg-white border border-gray-200 hover:border-[#1a3a6b] p-5 rounded-xl flex flex-col items-center justify-center gap-2 transition shadow-sm group hover:-translate-y-0.5 cursor-pointer"
           >
-            <AiOutlineSolution className="text-2xl text-blue-700" />
-            <span className="text-xs font-bold text-slate-700 group-hover:text-blue-800">Kelola Jadwal</span>
+            <AiOutlineSolution className="text-xl text-[#1a3a6b]" />
+            <span className="text-[12px] font-semibold text-slate-700 group-hover:text-[#1a3a6b]">Kelola Jadwal</span>
           </button>
         </div>
-      </section>
+      </div>
 
-      {/* 3. SECTION RECENT ACTIVITY (Placeholder) */}
-      <section className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-        <div className="px-6 py-4.5 border-b border-slate-100 flex justify-between items-center bg-white">
-          <h2 className="text-sm font-bold text-slate-800">Aktivitas Terkini</h2>
+      {/* 4. SECTION RECENT ACTIVITY */}
+      <div className="bg-white rounded-xl border border-gray-200/80 p-5 shadow-sm">
+        <div className="flex justify-between items-center mb-4">
+          <span className="text-[14px] font-bold text-gray-800">Aktivitas Terkini Sistem</span>
         </div>
-        <div className="px-6 py-10 text-center text-slate-400 text-xs">
-          Belum ada aktivitas terbaru dari sistem.
+        
+        <div className="relative w-full sm:w-64 mb-4">
+          <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <FiSearch className="text-gray-400" size={14} />
+          </span>
+          <input 
+            type="text" 
+            placeholder="Cari aktivitas..." 
+            value={searchAktivitas} 
+            onChange={(e) => setSearchAktivitas(e.target.value)} 
+            className="w-full pl-9 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs outline-none focus:border-slate-400" 
+          />
         </div>
-      </section>
+
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr>
+                {["Waktu", "User", "Aktivitas", "Detail"].map(h => <TH key={h}>{h}</TH>)}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredAktivitas.length > 0 ? (
+                filteredAktivitas.map((r, i) => (
+                  <tr key={i} className="hover:bg-gray-50/70 transition-colors">
+                    <TD className="text-gray-900 font-semibold">{r.time}</TD>
+                    <TD className="font-semibold text-slate-700">{r.user}</TD>
+                    <TD className="font-medium text-slate-800">{r.title}</TD>
+                    <TD className="text-gray-400 text-[12px] font-medium">{r.detail}</TD>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" className="px-3 py-10 text-center text-gray-400 text-[12px] font-medium">
+                    Belum ada aktivitas terbaru dari sistem.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   );
 };

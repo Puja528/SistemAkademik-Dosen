@@ -76,44 +76,45 @@ export default function Jadwal() {
   const mataKuliahUnik = [...new Set(dataJadwalReal.map(j => j.mata_kuliah))];
 
   return (
-    <div className="flex flex-col gap-6 p-6 bg-[#f4f6f9] min-h-screen font-sans">
-      {/* Ringkasan Header */}
-      <div className="bg-[#1a3a6b] text-white rounded-xl p-5 grid grid-cols-1 sm:grid-cols-4 gap-4 items-center shadow-md">
+    <div className="flex flex-col gap-6 p-6 bg-[#f4f6f9] min-h-screen font-sans text-xs text-slate-700 w-full">
+      
+      {/* 1. SEKSI RINGKASAN HEADER (STYLE GRADIENT BIRU) */}
+      <div className="text-white rounded-xl p-5 grid grid-cols-1 sm:grid-cols-4 gap-4 items-center shadow-sm" style={{ background: "linear-gradient(135deg, #1a3a6b 0%, #244b86 60%, #2e5fa3 100%)" }}>
         <div>
-          <p className="text-xs opacity-70 uppercase tracking-wider">Dosen Pengampu</p>
-          <h4 className="font-bold text-sm truncate">{profilDosen?.nama || "Memuat..."}</h4>
+          <p className="text-[10px] opacity-75 font-bold uppercase tracking-wider">Dosen Pengampu</p>
+          <h4 className="font-bold text-xs truncate">{profilDosen?.nama || "Memuat..."}</h4>
         </div>
         <div>
-          <p className="text-xs opacity-70 uppercase tracking-wider">Total Kelas Diampu</p>
-          <h4 className="font-bold text-base md:text-lg">{dataJadwalReal.length} Kelas</h4>
+          <p className="text-[10px] opacity-75 font-bold uppercase tracking-wider">Total Kelas Diampu</p>
+          <h4 className="font-bold text-sm">{dataJadwalReal.length} Kelas</h4>
         </div>
         <div>
-          <p className="text-xs opacity-70 uppercase tracking-wider">Hari Operasional</p>
-          <h4 className="font-bold text-base md:text-lg">{infoHariIni.namaHari}, {infoHariIni.tanggal}</h4>
+          <p className="text-[10px] opacity-75 font-bold uppercase tracking-wider">Hari Operasional</p>
+          <h4 className="font-bold text-sm">{infoHariIni.namaHari}, {infoHariIni.tanggal}</h4>
         </div>
         <div className="flex sm:justify-end gap-2">
           <button
             onClick={() => setViewMode(viewMode === "all" ? "today" : "all")}
-            className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-xs font-semibold border border-white/20 transition cursor-pointer"
+            className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg text-xs font-bold border border-white/20 transition cursor-pointer"
           >
-            {viewMode === "all" ? <FiList /> : <FiGrid />}
+            {viewMode === "all" ? <FiList className="text-xs" /> : <FiGrid className="text-xs" />}
             {viewMode === "all" ? "Fokus Hari Ini" : "Lihat Semua"}
           </button>
         </div>
       </div>
 
-      {/* Ikhtisar Kelas */}
+      {/* 2. IKHTISAR DATA KELAS (CARD VIEW) */}
       <div className="flex flex-col gap-3">
         <div className="flex justify-between items-center">
-          <h2 className="text-base font-bold text-gray-800 uppercase tracking-wide">
+          <h2 className="text-xs font-bold text-slate-950 uppercase tracking-wide">
             {viewMode === "today" ? "Jadwal Mengajar Hari Ini" : "Ikhtisar Kelas Diampu"}
           </h2>
           {selectedMataKuliah && (
             <button
               onClick={() => setSelectedMataKuliah(null)}
-              className="text-xs font-medium text-red-600 hover:underline flex items-center gap-1 cursor-pointer"
+              className="text-[11px] font-bold text-rose-600 hover:underline flex items-center gap-1 cursor-pointer"
             >
-              <FiEyeOff size={12}/> Bersihkan Filter
+              <FiEyeOff size={11}/> Bersihkan Filter
             </button>
           )}
         </div>
@@ -128,26 +129,26 @@ export default function Jadwal() {
                   key={index}
                   className={`bg-white rounded-xl border p-5 shadow-sm transition-all duration-300 ${
                     visible ? "opacity-100 scale-100 border-gray-200" : "opacity-30 scale-95 border-gray-100"
-                  } ${mk.hari === infoHariIni.namaHari ? "ring-2 ring-blue-500/50 border-blue-300" : ""}`}
+                  } ${mk.hari === infoHariIni.namaHari ? "ring-2 ring-[#1a3a6b]/30 border-[#1a3a6b]" : ""}`}
                 >
-                  <div className="flex justify-between items-start mb-3">
-                    <h3 className="font-bold text-gray-900 text-sm leading-tight">{mk.mata_kuliah}</h3>
+                  <div className="flex justify-between items-start mb-3 gap-2">
+                    <h3 className="font-bold text-slate-900 text-xs leading-tight uppercase">{mk.mata_kuliah}</h3>
                     {mk.hari === infoHariIni.namaHari && (
-                      <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">Hari Ini</span>
+                      <span className="bg-blue-50 border border-blue-200 text-blue-700 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md shrink-0">Hari Ini</span>
                     )}
                   </div>
-                  <div className="space-y-2.5 text-sm text-gray-600">
-                    <div className="flex items-center gap-2.5">
-                      <FiUsers className="text-gray-400" />
-                      <span>Kelas {mk.kelas} • {mk.sks} SKS</span>
+                  <div className="space-y-2 text-xs text-slate-600">
+                    <div className="flex items-center gap-2">
+                      <FiUsers className="text-slate-400 text-sm shrink-0" />
+                      <span className="font-medium">Kelas {mk.kelas} • <strong className="text-slate-800">{mk.sks} SKS</strong></span>
                     </div>
-                    <div className="flex items-center gap-2.5">
-                      <FiClock className="text-gray-400" />
-                      <span className="font-medium text-gray-700">{mk.hari}, {mk.jam_mulai?.substring(0, 5)} - {mk.jam_selesai?.substring(0, 5)} WIB</span>
+                    <div className="flex items-center gap-2">
+                      <FiClock className="text-slate-400 text-sm shrink-0" />
+                      <span className="font-bold text-slate-800">{mk.hari}, {mk.jam_mulai?.substring(0, 5)} - {mk.jam_selesai?.substring(0, 5)} WIB</span>
                     </div>
-                    <div className="flex items-center gap-2.5">
-                      <FiMapPin className="text-gray-400" />
-                      <span>{mk.ruangan}</span>
+                    <div className="flex items-center gap-2">
+                      <FiMapPin className="text-slate-400 text-sm shrink-0" />
+                      <span className="font-medium text-slate-700">{mk.ruangan}</span>
                     </div>
                   </div>
                 </div>
@@ -156,28 +157,28 @@ export default function Jadwal() {
         </div>
       </div>
 
-      {/* Timetable Mingguan */}
+      {/* 3. KALENDER TIMETABLE MINGGUAN */}
       {viewMode === "all" && (
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">Jadwal Kalender Mingguan</h2>
-            </div>
-            <div className="flex items-center gap-2 text-[#1a3a6b] bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg text-sm font-semibold">
-              <FiCalendar />
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
+            <h2 className="text-sm font-bold text-slate-950">Jadwal Kalender Mingguan</h2>
+            <div className="flex items-center gap-1.5 text-[#1a3a6b] bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm">
+              <FiCalendar className="text-sm" />
               <span>Semester Genap</span>
             </div>
           </div>
-          <div className="overflow-x-auto">
+          
+          <div className="overflow-x-auto rounded-lg border border-gray-100 p-1">
             <div className="min-w-[800px]">
               <div className="grid grid-cols-6 gap-3 mb-4 text-center border-b border-gray-100 pb-2">
-                <div className="text-left font-semibold text-xs uppercase tracking-wider text-gray-400 self-end px-2">Waktu</div>
+                <div className="text-left font-bold text-[10px] uppercase tracking-wider text-slate-400 self-end px-2">Waktu</div>
                 {Object.keys(jadwalSeminggu).map((hari) => (
-                  <div key={hari} className={`py-2 rounded-xl text-sm font-bold ${hari === infoHariIni.namaHari ? "bg-[#1a3a6b] text-white shadow-sm" : "bg-gray-50 text-gray-700 border"}`}>{hari}</div>
+                  <div key={hari} className={`py-1.5 rounded-lg text-xs font-bold tracking-wide border uppercase ${hari === infoHariIni.namaHari ? "bg-[#1a3a6b] text-white border-[#1a3a6b] shadow-sm" : "bg-gray-50 text-slate-700 border-gray-200"}`}>{hari}</div>
                 ))}
               </div>
+              
               <div className="grid grid-cols-6 gap-3">
-                <div className="space-y-12 text-xs font-bold text-gray-400 pt-2 px-2">
+                <div className="space-y-12 text-[10px] font-bold text-slate-400 font-mono pt-2 px-2">
                   <div>08:00 WIB</div>
                   <div>10:00 WIB</div>
                   <div>13:00 WIB</div>
@@ -191,32 +192,34 @@ export default function Jadwal() {
                         <div
                           key={idx}
                           onClick={() => setSelectedMataKuliah(kelas.nama)}
-                          className={`p-3 rounded-lg border text-left cursor-pointer transition-all ${kelas.color} ${visible ? "opacity-100 scale-100" : "opacity-20 scale-95"}`}
+                          className={`p-3 rounded-lg border text-left cursor-pointer transition-all shadow-sm ${kelas.color} ${visible ? "opacity-100 scale-100" : "opacity-20 scale-95"}`}
                         >
-                          <p className="font-bold text-xs leading-tight mb-1">{kelas.nama}</p>
-                          <div className="text-[11px] opacity-90 space-y-0.5">
-                            <p className="font-semibold">Klompok {kelas.kelas} · {kelas.ruang}</p>
-                            <p className="text-[10px] font-mono opacity-75">{kelas.waktu}</p>
+                          <p className="font-bold text-xs uppercase border-b border-blue-200 pb-1 mb-1 leading-tight">{kelas.nama}</p>
+                          <div className="text-[11px] space-y-0.5 text-blue-950 font-medium">
+                            <p>Kelompok {kelas.kelas} · <span className="font-bold">{kelas.ruang}</span></p>
+                            <p className="text-[10px] font-mono font-bold tracking-wide text-blue-700">{kelas.waktu}</p>
                           </div>
                         </div>
                       );
                     })}
-                    {listKelas.length === 0 && <div className="text-center py-12 text-xs text-gray-300 font-medium">Kosong</div>}
+                    {listKelas.length === 0 && <div className="text-center py-12 text-[11px] text-gray-400 font-medium tracking-wide">Kosong</div>}
                   </div>
                 ))}
               </div>
             </div>
           </div>
-          <div className="mt-6 pt-4 border-t border-gray-200">
-            <p className="text-xs font-bold uppercase text-gray-400 tracking-wider mb-3">Filter Cepat:</p>
+          
+          {/* FILTER LEGENDA QUICK CLICK */}
+          <div className="mt-6 pt-4 border-t border-gray-100">
+            <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-2.5">Filter Cepat:</p>
             <div className="flex flex-wrap gap-2">
               {mataKuliahUnik.map((namaMk) => (
                 <button
                   key={namaMk}
                   onClick={() => setSelectedMataKuliah(selectedMataKuliah === namaMk ? null : namaMk)}
-                  className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all cursor-pointer ${selectedMataKuliah === namaMk ? "bg-gray-900 text-white shadow-sm" : "bg-white text-gray-700 hover:bg-gray-50"}`}
+                  className={`flex items-center gap-2 text-xs font-bold px-3 py-1 rounded-full border transition-all cursor-pointer shadow-sm uppercase ${selectedMataKuliah === namaMk ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-700 border-gray-200 hover:bg-gray-50"}`}
                 >
-                  <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                   {namaMk}
                 </button>
               ))}

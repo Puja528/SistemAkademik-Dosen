@@ -16,9 +16,10 @@ const PublikasiNilai = lazy(() => import("./pages/admin/nilai/PublikasiNilai"));
 const Login = lazy(() => import("./pages/auth/Login"));
 const DashboardUtama = lazy(() => import("./pages/mahasiswa/DashboardUtama"));
 const KHS = lazy(() => import("./pages/mahasiswa/KHS"));
+
 const Absensi = lazy(() => import("./pages/mahasiswa/Absensi"));
 const MahasiswaLayout = lazy(() => import("./layouts/mahasiswa/MahasiswaLayout"));
-
+const Transkrip = lazy(() => import("./pages/mahasiswa/Transkrip"));
 const DosenDashboard = lazy(() => import("./pages/Dosen/Dashboard"));
 const DosenNilai = lazy(() => import("./pages/Dosen/Nilai"));
 const DosenJadwal = lazy(() => import("./pages/Dosen/Jadwal"));
@@ -89,6 +90,7 @@ function App() {
           >
             <Route path="/mahasiswa" element={<DashboardUtama />} />
             <Route path="/mahasiswa/khs" element={<KHS />} />
+            <Route path="/mahasiswa/transkrip" element={<Transkrip />} />
             <Route path="/mahasiswa/presensi" element={<Absensi />} />
           </Route>
 

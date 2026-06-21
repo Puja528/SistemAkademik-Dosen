@@ -29,20 +29,32 @@ const Login = ({ onLoginSukses }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-6 text-slate-700 font-sans">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 p-8 md:p-10 transition-all">
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-6 text-slate-700 font-sans">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200/60 p-8 md:p-10 transition-all">
 
-        {/* LOGO ATAU NAMA INSTITUSI */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-black text-white text-xl font-black mb-3 select-none">
-            A
+        {/* LOGO KAMPUS LOKAL ASSETS & TEXT PORTAL */}
+        <div className="flex items-center gap-4 mb-8 border-b border-gray-100 pb-5">
+          <div className="w-14 h-14 bg-white flex-shrink-0 p-0.5">
+            <img 
+              src="../src/assets/LogoPolteksim.png" 
+              alt="Polteksim Logo" 
+              className="w-full h-full object-contain"
+              onError={(e) => { 
+                e.target.style.display = 'none'; 
+                e.target.nextSibling.style.display = 'block';
+              }}
+            />
+            <span className="text-[10px] text-[#1a3a6b] font-black text-center leading-none hidden">POLTEKSIM</span>
           </div>
-          <h2 className="text-xl font-black text-slate-900 uppercase tracking-wider">
-            Sistem Informasi Academic
-          </h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Politeknik Negeri Simeulue
-          </p>
+          
+          <div>
+            <h2 className="text-lg font-black text-[#1a3a6b] uppercase tracking-wider m-0 leading-tight">
+              Polteksim Portal
+            </h2>
+            <p className="text-sm text-gray-400 font-normal m-0 mt-0.5 capitalize">
+              Sistem Informasi Akademik
+            </p>
+          </div>
         </div>
 
         {/* NOTIFIKASI ERROR */}
@@ -57,8 +69,8 @@ const Login = ({ onLoginSukses }) => {
 
           {/* INPUT EMAIL */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-              Email Institusi Resmi
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+              Surat Elektronik Resmi Institusi
             </label>
             <input
               type="email"
@@ -68,13 +80,13 @@ const Login = ({ onLoginSukses }) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isSubmitting}
-              className="w-full bg-slate-50 text-slate-900 text-xs font-medium px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-black focus:bg-white transition disabled:opacity-60"
+              className="w-full bg-gray-50/50 text-slate-900 text-xs font-medium px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#1a3a6b] focus:bg-white transition disabled:opacity-60"
             />
           </div>
 
           {/* INPUT PASSWORD */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
               Kata Sandi
             </label>
             <input
@@ -85,7 +97,7 @@ const Login = ({ onLoginSukses }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isSubmitting}
-              className="w-full bg-slate-50 text-slate-900 text-xs font-medium px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-black focus:bg-white transition disabled:opacity-60"
+              className="w-full bg-gray-50/50 text-slate-900 text-xs font-medium px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#1a3a6b] focus:bg-white transition disabled:opacity-60"
             />
           </div>
 
@@ -94,8 +106,8 @@ const Login = ({ onLoginSukses }) => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full text-white text-xs font-bold py-3.5 rounded-xl transition active:scale-[0.98] shadow-md flex items-center justify-center gap-2 ${
-                isSubmitting ? "bg-slate-400 cursor-not-allowed" : "bg-black hover:bg-slate-800"
+              className={`w-full text-white text-xs font-bold py-3.5 rounded-xl transition active:scale-[0.98] shadow-md flex items-center justify-center gap-2 cursor-pointer ${
+                isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-[#1a3a6b] hover:bg-[#244b86]"
               }`}
             >
               {isSubmitting ? "Memverifikasi..." : "Masuk ke Akun"}
@@ -105,9 +117,9 @@ const Login = ({ onLoginSukses }) => {
         </form>
 
         {/* FOOTER KETERANGAN */}
-        <div className="text-center mt-8 pt-5 border-t border-slate-100">
-          <p className="text-[10px] text-slate-400 font-medium">
-            Hak Akses Terbatas. Hubungi bagian BAAK jika Anda lupa kredensial akun Anda.
+        <div className="text-center mt-8 pt-5 border-t border-gray-100">
+          <p className="text-[10px] text-gray-400 font-medium leading-relaxed">
+            Hak Akses Terbatas. Hubungi bagian BAAK jika Anda melupakan informasi akun Anda.
           </p>
         </div>
 

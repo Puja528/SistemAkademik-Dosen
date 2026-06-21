@@ -14,37 +14,41 @@ const Navbar = () => {
       case "/admin/dosen":
         return "Data Dosen"; 
       case "/admin/jadwal":
-        return "Operasi Akademik";
+        return "Kelola Jadwal";
       case "/admin/nilai":
         return "Publikasi Nilai";
       default:
-        return "AIS Portal";
+        return "POLTEKSIM PORTAL";
     }
   };
 
-
   return (
-    <header className="bg-white border-b border-slate-200 px-8 py-3 flex justify-between items-center sticky top-0 z-10 w-full h-[60px] shrink-0">
-      <h1 className="text-xl font-semibold text-slate-900 tracking-tight"> 
+    <header className="bg-white border-b border-gray-200 px-6 py-3 flex justify-between items-center sticky top-0 z-10 w-full h-16 shrink-0 font-sans">
+      
+      {/* JUDUL HALAMAN: Diubah ke text-[15px] dan font-medium agar kecil & tipis sesuai gambar */}
+      <h1 className="text-[15px] font-medium text-slate-800 tracking-wide"> 
         {dapatkanJudulHalaman()}
       </h1>
       
-      <div className="flex items-center gap-5">
-        <button className="relative text-slate-400 hover:text-cyan-700 transition">
-          <AiOutlineBell className="text-xl" />
-          <span className="absolute -top-1 -right-1 bg-red-500 w-2 h-2 rounded-full"></span>
+      <div className="flex items-center gap-4">
+        {/* Notifikasi Bell */}
+        <button type="button" className="relative text-gray-400 hover:text-[#1a3a6b] transition cursor-pointer">
+          <AiOutlineBell className="text-lg" />
+          <span className="absolute -top-0.5 -right-0.5 bg-red-500 w-1.5 h-1.5 rounded-full"></span>
         </button>
         
-        <div className="flex items-center gap-3 border-l border-slate-200 pl-5">
-          <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs tracking-wider">
+        {/* Profil Admin */}
+        <div className="flex items-center gap-3 border-l border-gray-200 pl-4">
+          <div className="w-8 h-8 rounded-full bg-[#f0f4f8] text-[#1a3a6b] flex items-center justify-center font-bold text-xs tracking-wider">
             AU
           </div>
-          <div className="text-left hidden md:block">
-            <p className="text-xs font-bold text-slate-800 leading-tight">Admin User</p>
-            <p className="text-[10px] font-medium text-slate-400">System Administrator</p>
+          <div className="text-left hidden md:block leading-tight">
+            <p className="text-xs font-bold text-gray-800">Admin</p>
+            <p className="text-[10px] text-gray-400 font-medium">System Administrator</p>
           </div>
         </div>
       </div>
+      
     </header>
   );
 };

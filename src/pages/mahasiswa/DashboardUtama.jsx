@@ -3,7 +3,6 @@ import { mahasiswaAPI } from '../../services/mahasiswaAPI';
 import { nilaiAPI } from '../../services/nilaiAPI';
 import Loading from '../../components/admin/Loading';
 
-// Helper Komponen Tabel agar seragam dengan Dashboard Admin
 const TH = ({ children, className = "" }) => (
   <th className={`text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-4 py-2.5 border-b border-gray-100 text-left ${className}`}>{children}</th>
 );
@@ -19,7 +18,6 @@ export default function DashboardUtama() {
   const [isLoading, setIsLoading] = useState(true);
   const [waktu, setWaktu] = useState(new Date());
 
-  // Real-time Clock disamakan dengan Dashboard Admin
   useEffect(() => {
     const timer = setInterval(() => setWaktu(new Date()), 1000);
     return () => clearInterval(timer);

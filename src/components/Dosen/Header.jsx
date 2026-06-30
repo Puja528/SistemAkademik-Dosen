@@ -1,55 +1,87 @@
-import { FiChevronDown, FiBell, FiSearch } from "react-icons/fi";
-import React, { useState } from "react";
+import React from "react";
+import { useLocation } from "react-router-dom";
+import { AiOutlineBell } from "react-icons/ai";
+import { FiMenu } from "react-icons/fi"; 
 
-export default function Header() {
-  const [search, setSearch] = useState("");
+const Header = ({ toggleSidebar }) => { 
+  const location = useLocation();
+
+  // Menyelaraskan teks judul halaman dengan rute menu dosen Anda
+  const dapatkanJudulHalaman = () => {
+    switch (location.pathname) {
+      case "/dosen/dashboard":
+        return "Dashboard";
+      case "/dosen/absensi":
+      case "/dosen/kelola-absensi":
+        return "Kelola Absensi";
+      case "/dosen/nilai":
+      case "/dosen/kelola-nilai":
+        return "Kelola Nilai"; 
+      case "/dosen/jadwal":
+        return "Jadwal";
+      default:
+        return "Dashboard";
+    }
+  };
+
+  // ── DATA BACKEND: Mengambil session dosen murni jika ada (Opsional) ──
+  const localSession = localStorage.getItem("siakad_session");
+  const userLogin = localSession ? JSON.parse(localSession) : null;
+  const namaDosenReal = userLogin?.nama || "Dosen";
+
+  // Mengambil 3 inisial huruf dari nama dosen, default 'DJS' jika data kosong
+  const inisialAvatar = userLogin?.nama 
+    ? userLogin.nama.substring(0, 3).toUpperCase() 
+    : "DJS";
 
   return (
-    <header className="sticky top-0 z-40 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 gap-4 font-sans flex-shrink-0 text-xs">
-
-      {/* Search Input Box */}
-      <div className="relative flex-1 max-w-xs">
-        <FiSearch
-          size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-        />
-        <input
-          type="text"
-          placeholder="Cari mata kuliah, capaian..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full h-9 pl-9 pr-3.5 rounded-lg border border-gray-200 bg-gray-50 text-xs text-slate-700 outline-none focus:border-slate-300 focus:bg-white transition-colors placeholder:text-slate-400"
-        />
-      </div>
-
-      {/* Right Side Control Panel */}
-      <div className="flex items-center gap-4">
-
-        {/* Notification Bell Icon */}
-        <button className="relative p-1.5 text-slate-500 rounded-lg hover:bg-gray-50 text-slate-600 transition-colors cursor-pointer">
-          <FiBell size={17} />
-          <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-rose-500 rounded-full border border-white" />
+    <header className="bg-white border-b border-gray-200 px-4 md:px-6 py-3 flex justify-between items-center sticky top-0 z-10 w-full h-16 shrink-0 font-sans">
+      
+      {/* SISI KIRI: Tombol Hamburger & Judul Halaman */}
+      <div className="flex items-center gap-3">
+        {/* Tombol Hamburger: Muncul otomatis jika di HP */}
+        <button 
+          onClick={toggleSidebar}
+          type="button"
+          className="p-1.5 text-slate-600 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer md:hidden flex-shrink-0"
+          aria-label="Open Menu"
+        >
+          <FiMenu size={18} />
         </button>
 
-        {/* Vertical Divider */}
-        <div className="w-px h-6 bg-gray-200" />
-
-        {/* User Profile Dropdown Button */}
-        <button className="flex items-center gap-2.5 rounded-lg px-2 py-1 hover:bg-gray-50 transition-colors cursor-pointer border-none text-left">
-          {/* Avatar Component */}
-          <div className="w-8 h-8 rounded-lg bg-[#1a3a6b] flex items-center justify-center text-white text-[11px] font-black tracking-wider flex-shrink-0 shadow-sm">
-            DJS
-          </div>
-
-          {/* User Identity Info */}
-          <div className="text-left leading-tight">
-            <p className="text-xs font-bold text-slate-900 m-0">Dr. John Smith</p>
-            <p className="text-[10px] font-medium text-slate-400 m-0 tracking-wide uppercase">Senior Lecturer</p>
-          </div>
-
-          <FiChevronDown size={14} className="text-slate-400" />
-        </button>
+        {/* JUDUL HALAMAN: Menggunakan font-medium 15px tipis agar rapi */}
+        <h1 className="text-[14px] md:text-[15px] font-medium text-slate-800 tracking-wide truncate max-w-[150px] sm:max-w-none m-0"> 
+          {dapatkanJudulHalaman()}
+        </h1>
       </div>
+      
+      {/* SISI KANAN: Panel Notifikasi & Profil */}
+      <div className="flex items-center gap-3 md:gap-4">
+        {/* Notifikasi Bell */}
+        <button type="button" className="relative text-gray-400 hover:text-[#1a3a6b] transition-colors cursor-pointer p-1">
+          <AiOutlineBell className="text-lg" />
+          <span className="absolute top-1 right-1 bg-red-500 w-1.5 h-1.5 rounded-full"></span>
+        </button>
+        
+        {/* Profil Dosen (Sama persis skalanya dengan layout Mahasiswa & Admin) */}
+        <div className="flex items-center gap-2 md:gap-3 border-l border-gray-200 pl-3 md:pl-4">
+          
+          {/* Avatar Bulat Inisial (Bergeser ke kiri sebelum teks nama) */}
+          <div className="w-8 h-8 rounded-full bg-[#f0f4f8] text-[#1a3a6b] flex items-center justify-center font-bold text-xs tracking-wider flex-shrink-0 shadow-sm">
+            {inisialAvatar}
+          </div>
+          
+          {/* Informasi Identitas Dosen: Disembunyikan di HP kecil agar hemat ruang (Bergeser ke kanan) */}
+          <div className="hidden md:block text-left leading-tight">
+            <p className="text-xs font-bold text-gray-800 m-0 mt-0.5">{namaDosenReal}</p>
+            <p className="text-[9px] text-slate-400 uppercase font-medium tracking-wider m-0">Senior Lecture</p>
+          </div>
+
+        </div>
+      </div>
+      
     </header>
   );
-}
+};
+
+export default Header;

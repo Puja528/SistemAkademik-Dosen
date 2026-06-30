@@ -15,10 +15,10 @@ const StatusBadge = ({ status }) => {
   const isSelesai = status === "selesai";
   const isSebagian = status === "sebagian";
   const label = isSelesai ? "Selesai" : isSebagian ? "Sebagian" : "Belum Diisi";
-  const bgClass = isSelesai 
-    ? "bg-green-50 text-green-700 border-green-200" 
-    : isSebagian 
-      ? "bg-amber-50 text-amber-700 border-amber-200" 
+  const bgClass = isSelesai
+    ? "bg-green-50 text-green-700 border-green-200"
+    : isSebagian
+      ? "bg-amber-50 text-amber-700 border-amber-200"
       : "bg-rose-50 text-rose-700 border-rose-200";
   return <span className={`inline-block px-2.5 py-1 rounded-md text-[11px] font-bold border ${bgClass}`}>{label}</span>;
 };
@@ -67,33 +67,64 @@ const Dashboard = () => {
 
   const hari = waktu.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   const jam = waktu.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  const hariIni = new Date().toLocaleDateString("id-ID", { weekday: "long" });
 
+  // ✅ FIX 1: Filter hari dipindah ke sini agar dataDosen.jadwal.length tetap = total MK
+  // Normalisasi lowercase untuk mencegah mismatch "Senin" vs "senin" dari DB
+  const hariIniNormalized = new Date().toLocaleDateString("id-ID", { weekday: "long" }).toLowerCase();
   const JADWAL_HARI_INI = dataDosen.jadwal
-    .filter(j => j.hari?.toLowerCase() === hariIni.toLowerCase())
+    .filter(j => j.hari?.toLowerCase() === hariIniNormalized)
     .map(j => ({
-      jam: `${j.jam_mulai?.substring(0, 5) || '00:00'} - ${j.jam_selesai?.substring(0, 5) || '00:00'}`,
+      jam: `${j.jam_mulai?.substring(0, 5) || "00:00"} - ${j.jam_selesai?.substring(0, 5) || "00:00"}`,
       matkul: j.mata_kuliah,
       kelas: j.kelas,
       ruang: j.ruangan
     }));
 
-  const filteredAbsensi = dataDosen.absen.map(a => ({
-    nim: a.id_mahasiswa,
-    nama: a.mahasiswa?.nama || "-",
-    kehadiran: a.status_kehadiran,
-    persen: a.status_kehadiran === "Hadir" ? 100 : 0
-  })).filter((item) =>
-    item.nama.toLowerCase().includes(searchAbsen.toLowerCase()) || item.nim.toString().includes(searchAbsen)
+  // ✅ FIX 3: Hitung persentase kehadiran per mahasiswa dari semua record absensi
+  // (bukan hanya 100/0 dari satu baris)
+  const rekapAbsensiPerMahasiswa = (() => {
+    const map = {};
+    for (const a of dataDosen.absen) {
+      const id = a.id_mahasiswa;
+      if (!map[id]) {
+        map[id] = {
+          nim: id,
+          // ✅ FIX 3: mahasiswa bisa null jika belum ada foreign key di Supabase
+          nama: a.mahasiswa?.nama || String(id),
+          total: 0,
+          hadir: 0
+        };
+      }
+      map[id].total += 1;
+      if (a.status_kehadiran === "Hadir") map[id].hadir += 1;
+    }
+    return Object.values(map).map(m => ({
+      ...m,
+      persen: m.total > 0 ? Math.round((m.hadir / m.total) * 100) : 0,
+      kehadiran: `${m.hadir}/${m.total} pertemuan`
+    }));
+  })();
+
+  const filteredAbsensi = rekapAbsensiPerMahasiswa.filter(item =>
+    item.nama.toLowerCase().includes(searchAbsen.toLowerCase()) ||
+    String(item.nim).includes(searchAbsen)
   );
 
-  const filteredNilai = dataDosen.nilai.filter((item) => filterNilai === "semua" || (item.status_nilai === "Terbit" ? "selesai" : "belum") === filterNilai);
+  // ✅ FIX 2: status_nilai sudah berasal dari tabel jadwal dengan field lengkap
+  const filteredNilai = dataDosen.nilai.filter(item =>
+    filterNilai === "semua" ||
+    (item.status_nilai === "Terbit" ? "selesai" : "belum") === filterNilai
+  );
 
-  if (isLoading) return <div className="p-6 text-xs font-bold uppercase tracking-wider text-gray-400">Menghubungkan ke database server...</div>;
+  if (isLoading) return (
+    <div className="p-6 text-xs font-bold uppercase tracking-wider text-gray-400">
+      Menghubungkan ke database server...
+    </div>
+  );
 
   return (
     <div className="p-6 flex flex-col gap-6 bg-[#f4f6f9] min-h-screen font-sans text-xs text-slate-700 w-full">
-      
+
       {/* KARTU WELCOME GRADIENT */}
       <div className="rounded-xl p-5 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm" style={{ background: "linear-gradient(135deg, #1a3a6b 0%, #244b86 60%, #2e5fa3 100%)" }}>
         <div>
@@ -109,9 +140,28 @@ const Dashboard = () => {
       {/* TIGA KARTU STATISTIK UTAMA */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { icon: FiBook, label: "Mata Kuliah Diampu", value: dataDosen.jadwal.length, sub: "Semester Berjalan", bgIcon: "bg-blue-50 text-[#1a3a6b]" },
-          { icon: FiUsers, label: "Total Mahasiswa", value: [...new Set(dataDosen.absen.map(a => a.id_mahasiswa))].length, sub: "Data Terintegrasi", bgIcon: "bg-emerald-50 text-emerald-600" },
-          { icon: FiBookOpen, label: "Status Nilai", value: `${dataDosen.nilai.filter(n => n.status_nilai === 'Terbit').length}/${dataDosen.nilai.length || 0}`, sub: "Selesai diinput", bgIcon: "bg-purple-50 text-purple-600" },
+          {
+            icon: FiBook,
+            label: "Mata Kuliah Diampu",
+            // ✅ FIX 4: sekarang dataDosen.jadwal berisi SEMUA jadwal, bukan hanya hari ini
+            value: dataDosen.jadwal.length,
+            sub: "Semester Berjalan",
+            bgIcon: "bg-blue-50 text-[#1a3a6b]"
+          },
+          {
+            icon: FiUsers,
+            label: "Total Mahasiswa",
+            value: [...new Set(dataDosen.absen.map(a => a.id_mahasiswa))].length,
+            sub: "Data Terintegrasi",
+            bgIcon: "bg-emerald-50 text-emerald-600"
+          },
+          {
+            icon: FiBookOpen,
+            label: "Status Nilai",
+            value: `${dataDosen.nilai.filter(n => n.status_nilai === "Terbit").length}/${dataDosen.nilai.length || 0}`,
+            sub: "Selesai diinput",
+            bgIcon: "bg-purple-50 text-purple-600"
+          },
         ].map(({ icon: Icon, label, value, sub, bgIcon }, i) => (
           <div key={i} className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex justify-between items-center">
             <div className="space-y-1">
@@ -126,11 +176,11 @@ const Dashboard = () => {
 
       {/* GRID DUA KOLOM: JADWAL & STATUS NILAI */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        
+
         {/* KOTAK JADWAL MENGAJAR HARI INI */}
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex flex-col">
           <div className="flex items-center gap-2 mb-4">
-            <FiCalendar className="text-[#1a3a6b] text-sm" /> 
+            <FiCalendar className="text-[#1a3a6b] text-sm" />
             <span className="text-sm font-bold text-slate-950">Jadwal Mengajar Hari Ini</span>
           </div>
           <div className="overflow-x-auto flex-1">
@@ -163,24 +213,29 @@ const Dashboard = () => {
         {/* KOTAK STATUS INPUT NILAI */}
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex flex-col">
           <div className="flex items-center gap-2 mb-4">
-            <FiBookOpen className="text-[#1a3a6b] text-sm" /> 
+            <FiBookOpen className="text-[#1a3a6b] text-sm" />
             <span className="text-sm font-bold text-slate-950">Status Nilai Mata Kuliah</span>
           </div>
           <div className="overflow-x-auto flex-1">
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  <TH>Mata Kuliah Kelas</TH>
-                  <TH className="text-right">Status Tindakan</TH>
+                  <TH>Mata Kuliah & Kelas</TH>
+                  <TH className="text-right">Status</TH>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {filteredNilai.length > 0 ? (
                   filteredNilai.map((n, i) => (
                     <tr key={i} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-3 py-3 text-xs font-bold text-slate-800 uppercase">{n.mata_kuliah}</td>
+                      <td className="px-3 py-3 text-xs">
+                        <div className="font-bold text-slate-800 uppercase">{n.mata_kuliah}</div>
+                        {n.kelas && (
+                          <div className="text-[11px] text-slate-400 font-medium">Kelas {n.kelas}</div>
+                        )}
+                      </td>
                       <td className="px-3 py-3 text-right">
-                        <StatusBadge status={n.status_nilai === 'Terbit' ? 'selesai' : 'belum'} />
+                        <StatusBadge status={n.status_nilai === "Terbit" ? "selesai" : "belum"} />
                       </td>
                     </tr>
                   ))
@@ -203,16 +258,16 @@ const Dashboard = () => {
             <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               <FiSearch className="text-gray-400" size={13} />
             </span>
-            <input 
-              type="text" 
-              placeholder="Cari NIM atau nama..." 
-              value={searchAbsen} 
-              onChange={(e) => setSearchAbsen(e.target.value)} 
-              className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none focus:border-slate-400 focus:bg-white transition" 
+            <input
+              type="text"
+              placeholder="Cari NIM atau nama..."
+              value={searchAbsen}
+              onChange={(e) => setSearchAbsen(e.target.value)}
+              className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none focus:border-slate-400 focus:bg-white transition"
             />
           </div>
         </div>
-        
+
         <div className="overflow-x-auto rounded-lg border border-gray-100">
           <table className="w-full border-collapse">
             <thead>
@@ -229,7 +284,7 @@ const Dashboard = () => {
                     <TD className="font-semibold text-slate-700">{r.kehadiran}</TD>
                     <TD>
                       <div className="flex items-center gap-3 w-full max-w-xs">
-                        <ProgressBar persen={r.persen} /> 
+                        <ProgressBar persen={r.persen} />
                         <span className="font-bold text-slate-900 w-8 text-right">{r.persen}%</span>
                       </div>
                     </TD>
